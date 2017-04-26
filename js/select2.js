@@ -46,17 +46,18 @@
               return item.text;
             },
             templateSelection: function(item) {
+              var text = item.text;
               if(typeof options.items[item.id] != 'undefined'){
                 $.extend(item, options.items[item.id]);
               }
 
               if(item.id == item.text) {
-                item.text = '*' + item.text;
+                text = '*' + text;
                 item.status = '0';
               }
 
               if(item.status === '0'){
-                return $('<span>' + item.text + '</span>').addClass('status-unpublished');
+                return $('<span>' + text + '</span>').addClass('status-unpublished');
               }
 
               return item.text;
