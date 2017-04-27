@@ -23,7 +23,7 @@ select2.full:
   js:
     /libraries/select2/dist/js/select2.full.js: { minified: true }
   css:
-    base:
+    component:
       /libraries/select2/dist/css/select2.min.css: {}
   dependencies:
     - core/jquery
@@ -32,7 +32,7 @@ select2.widget:
   js:
     js/select2.js: { weight: -1, minified: false }
   css:
-    base:
+    layout:
       css/select2.css: {}
   dependencies:
     - select2_widget/select2.full

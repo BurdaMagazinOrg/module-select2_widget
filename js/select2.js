@@ -5,7 +5,6 @@
       if(typeof drupalSettings.select2 != 'undefined'){
 
         $.each(drupalSettings.select2, function(id, options) {
-          console.log(options);
           var ajax_url = $(options.selector).attr('data-autocomplete-path');
 
           $(options.selector).css('width', '100%').select2({
@@ -40,12 +39,9 @@
               return markup;
             },
             templateResult: function(item){
-              // if(item.id == item.text) {
-              //   return '#' + item.text;
-              // }
               return item.text;
             },
-            templateSelection: function(item) {
+            templateSelection: function(item, callee) {
               var text = item.text;
               if(typeof options.items[item.id] != 'undefined'){
                 $.extend(item, options.items[item.id]);
@@ -57,7 +53,11 @@
               }
 
               if(item.status === '0'){
-                return $('<span>' + text + '</span>').addClass('status-unpublished');
+                $(callee[0]).addClass('status-unpublished');//.css('background-color', '#e62600');
+                return $('<span>' + text + '</span>');//.addClass('status-unpublished');
+              }
+              else {
+                $(callee[0]).addClass('status-published');//.css('background-color', '#77b259');
               }
 
               return item.text;
