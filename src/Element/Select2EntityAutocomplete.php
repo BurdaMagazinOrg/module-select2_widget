@@ -45,6 +45,28 @@ class Select2EntityAutocomplete extends Select {
     return $info;
   }
 
+  public static function valueCallback(&$element, $input, FormStateInterface $form_state) {
+    $result = parent::valueCallback($element, $input, $form_state);
+    $target_type = $element['#target_type'];
+    $selected_options = $element['#options'];
+
+    foreach ($result as $entity_id => $label) {
+      if(!isset($selected_options[$entity_id])){
+        if(is_numeric($entity_id)){
+          $entity = \Drupal::entityTypeManager()->getStorage($target_type)->load($entity_id);
+          $selected_options[$entity_id] = $entity->label();
+        }
+        else {
+          $selected_options[$entity_id] = $entity_id;
+        }
+      }
+    }
+
+    $element['#options'] = $selected_options;
+
+    return $result;
+  }
+
   public static function processEntityAutocomplete(array &$element, FormStateInterface $form_state, array &$complete_form) {
     $element = EntityAutocomplete::processEntityAutocomplete($element, $form_state, $complete_form);
     $element['#autocomplete_route_name'] = 'select2_widget.entity_autocomplete';
