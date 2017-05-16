@@ -6,6 +6,7 @@ use Drupal\Core\Entity\Element\EntityAutocomplete;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element\Select;
 use Drupal\Core\Render\Element\Textfield;
+use function is_array;
 
 /**
  * Provides an select2 entity autocomplete form element.
@@ -50,19 +51,20 @@ class Select2EntityAutocomplete extends Select {
     $target_type = $element['#target_type'];
     $selected_options = $element['#options'];
 
-    foreach ($result as $entity_id => $label) {
-      if(!isset($selected_options[$entity_id])){
-        if(is_numeric($entity_id)){
-          $entity = \Drupal::entityTypeManager()->getStorage($target_type)->load($entity_id);
-          $selected_options[$entity_id] = $entity->label();
-        }
-        else {
-          $selected_options[$entity_id] = $entity_id;
+    if(is_array($result)){
+      foreach ($result as $entity_id => $label) {
+        if(!isset($selected_options[$entity_id])){
+          if(is_numeric($entity_id)){
+            $entity = \Drupal::entityTypeManager()->getStorage($target_type)->load($entity_id);
+            $selected_options[$entity_id] = $entity->label();
+          }
+          else {
+            $selected_options[$entity_id] = $entity_id;
+          }
         }
       }
+      $element['#options'] = $selected_options;
     }
-
-    $element['#options'] = $selected_options;
 
     return $result;
   }
