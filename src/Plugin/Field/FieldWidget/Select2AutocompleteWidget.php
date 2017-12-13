@@ -9,6 +9,8 @@ use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\Plugin\Field\FieldWidget\OptionsSelectWidget;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Field\FieldItemListInterface;
+use function str_replace;
+use function strpos;
 
 /**
  * Plugin implementation of the 'select2_autocomplete_widget' widget.
@@ -47,9 +49,12 @@ class Select2AutocompleteWidget extends OptionsSelectWidget {
         if(!isset($selected_options[$entity_id])){
           if(is_numeric($entity_id)){
             $entity = \Drupal::entityTypeManager()->getStorage($target_type)->load($entity_id);
-            $selected_options[$entity_id] = $entity->label();
+            if(isset($entity)) {
+              $selected_options[$entity_id] = $entity->label();
+            }
           }
-          else {
+
+          if(!isset($selected_options[$entity_id])) {
             $selected_options[$entity_id] = $entity_id;
           }
         }
@@ -108,14 +113,22 @@ class Select2AutocompleteWidget extends OptionsSelectWidget {
   }
 
   public static function validateElement(array $element, FormStateInterface $form_state) {
+    $target_type = $element['#target_type'];
 
-    $element_value = array_reduce($element['#value'], function ($return, $item) {
+    $element_value = array_reduce($element['#value'], function ($return, $item) use ($target_type) {
       if (is_numeric($item)) {
-        $return[] = 'dummy term name (' . $item . ')';
+        $entity = \Drupal::entityTypeManager()->getStorage($target_type)->load($item);
+        if(isset($entity)){
+          $item = 'dummy term name (' . $item . ')';
+        }
       }
-      else {
-        $return[] = $item;
+
+      if(strpos($item, 'create:') === 0) {
+        $item = str_replace('create:', '', $item);
       }
+
+      $return[] = $item;
+
       return $return;
     });
 

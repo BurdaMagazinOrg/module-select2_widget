@@ -1,4 +1,6 @@
 (function ($, Drupal) {
+  'use strict';
+
   Drupal.behaviors.select2_widget = {
     attach: function(context, drupalSettings) {
 
@@ -35,6 +37,14 @@
             },
             language: 'de',
             minimumInputLength: 1,
+            createTag: function(params) {
+              var t = '';
+              return {
+                id: 'create:' + params.term,
+                text: params.term,
+                create: true
+              }
+            },
             escapeMarkup: function (markup) {
               return markup;
             },
@@ -47,7 +57,7 @@
                 $.extend(item, options.items[item.id]);
               }
 
-              if(item.id == item.text) {
+              if(item.create) {
                 text = '*' + text;
                 item.status = '0';
               }
