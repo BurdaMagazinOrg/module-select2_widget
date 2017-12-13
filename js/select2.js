@@ -39,11 +39,14 @@
             minimumInputLength: 1,
             createTag: function(params) {
               var t = '';
-              return {
+              var item = {
                 id: 'create:' + params.term,
                 text: params.term,
+                status: '0',
                 create: true
-              }
+              };
+              options.items[item.id] = item;
+              return item;
             },
             escapeMarkup: function (markup) {
               return markup;
@@ -56,10 +59,12 @@
               if(typeof options.items[item.id] != 'undefined'){
                 $.extend(item, options.items[item.id]);
               }
+              else {
+                options.items[item.id] = item;
+              }
 
               if(item.create) {
                 text = '*' + text;
-                item.status = '0';
               }
 
               if(item.status === '0'){
