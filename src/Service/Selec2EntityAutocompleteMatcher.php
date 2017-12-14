@@ -24,7 +24,7 @@ class Selec2EntityAutocompleteMatcher extends EntityAutocompleteMatcher {
     if (isset($string)) {
       // Get an array of matching entities.
       $match_operator = !empty($selection_settings['match_operator']) ? $selection_settings['match_operator'] : 'CONTAINS';
-      $entity_labels = $handler->getReferenceableEntities($string, $match_operator, 10);
+      $entity_labels = $handler->getReferenceableEntities($string, $match_operator, 50);
 
       // Loop through the entities and convert them into autocomplete output.
       foreach ($entity_labels as $values) {
