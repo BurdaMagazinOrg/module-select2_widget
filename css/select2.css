@@ -19,6 +19,7 @@
 .select2-results__option span {
     border: 1px solid #aaa;
     border-radius: 4px;
+    padding: 0 5px;
 }
 
 .select2-container--default
