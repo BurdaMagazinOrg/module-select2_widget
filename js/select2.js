@@ -4,7 +4,7 @@
   Drupal.behaviors.select2_widget = {
     attach: function(context, drupalSettings) {
 
-      if(typeof drupalSettings.select2 != 'undefined'){
+      if(typeof drupalSettings.select2 !== 'undefined'){
 
         $.each(drupalSettings.select2, function(id, options) {
           var ajax_url = $(options.selector).attr('data-autocomplete-path');
@@ -38,10 +38,9 @@
             language: 'de',
             minimumInputLength: 1,
             createTag: function(params) {
-              var t = '';
               var item = {
                 id: 'create:' + params.term,
-                text: params.term,
+                label: params.term,
                 status: '0',
                 create: true
               };
@@ -51,17 +50,32 @@
             escapeMarkup: function (markup) {
               return markup;
             },
-            templateResult: function(item){
+            templateResult: function(item, option){
+              if(!item.loading) {
+                if(item.create) {
+                  return 'Create: ' + item.label;
+                }
+                if(item.status === '0'){
+                  $(option).addClass('status-unpublished');
+                  return '<span>' + item.text + '</span>';
+                }
+                else {
+                  $(option).addClass('status-published');
+                  return '<span>' + item.text + '</span>';
+                }
+              }
+
               return item.text;
             },
             templateSelection: function(item, callee) {
-              var text = item.text;
-              if(typeof options.items[item.id] != 'undefined'){
+              if(typeof options.items[item.id] !== 'undefined'){
                 $.extend(item, options.items[item.id]);
               }
               else {
                 options.items[item.id] = item;
               }
+
+              var text = item.label;
 
               if(item.create) {
                 text = '*' + text;
@@ -75,7 +89,7 @@
                 $(callee[0]).addClass('status-published');//.css('background-color', '#77b259');
               }
 
-              return item.text;
+              return item.label;
             }
           });
 

@@ -9,6 +9,7 @@ use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\Plugin\Field\FieldWidget\OptionsSelectWidget;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Field\FieldItemListInterface;
+use function is_array;
 use function str_replace;
 use function strpos;
 
@@ -99,7 +100,7 @@ class Select2AutocompleteWidget extends OptionsSelectWidget {
       if(isset($entity)){
         $select2_settings['items'][$entity_id] = [
           'id' => $entity_id,
-          'text' => $label,
+          'label' => $label,
           'status' => $entity->get('status')->value,
         ];
       }
@@ -168,9 +169,10 @@ class Select2AutocompleteWidget extends OptionsSelectWidget {
    */
   protected function getAutocreateBundle() {
     $bundle = NULL;
-    if ($this->getSelectionHandlerSetting('auto_create') && $target_bundles = $this->getSelectionHandlerSetting('target_bundles')) {
+    $target_bundles = $this->getSelectionHandlerSetting('target_bundles');
+    if ($this->getSelectionHandlerSetting('auto_create')) {
       // If there's only one target bundle, use it.
-      if (count($target_bundles) == 1) {
+      if (is_array($target_bundles) && count($target_bundles) == 1) {
         $bundle = reset($target_bundles);
       }
       // Otherwise use the target bundle stored in selection handler settings.

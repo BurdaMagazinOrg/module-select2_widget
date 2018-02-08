@@ -34,8 +34,10 @@ class Selec2EntityAutocompleteMatcher extends EntityAutocompleteMatcher {
           $matches[] = [
             'id' => $entity_id,
             'text' => $label,
+            'label' => $entity->label(),
             'status' => $entity->get('status')->value
           ];
+
         }
       }
     }
