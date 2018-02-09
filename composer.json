@@ -3,5 +3,8 @@
   "type": "drupal-module",
   "description": "Select2 integration for entity reference fields",
   "license": "GPL-2.0",
-  "minimum-stability": "dev"
+  "minimum-stability": "dev",
+  "require": {
+    "select2/select2": "^4.0"
+  }
 }
