@@ -10,8 +10,8 @@
           var ajax_url = $(options.selector).attr('data-autocomplete-path');
 
           $(options.selector).css('width', '100%').select2({
-            tags: true,
-            multiple: true,
+            tags: $(options.selector).attr('autocreate'),
+            multiple: $(options.selector).attr('multiple'),
             ajax: {
               url: ajax_url,
               dataType: 'json',

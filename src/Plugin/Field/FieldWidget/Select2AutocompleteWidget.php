@@ -5,13 +5,12 @@ namespace Drupal\select2_widget\Plugin\Field\FieldWidget;
 use Drupal\Component\Utility\Html;
 use Drupal\Component\Utility\Tags;
 use Drupal\Core\Entity\Element\EntityAutocomplete;
+use Drupal\Core\Entity\EntityPublishedInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\Plugin\Field\FieldWidget\OptionsSelectWidget;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Field\FieldItemListInterface;
-use function is_array;
-use function str_replace;
-use function strpos;
+use Drupal\user\EntityOwnerInterface;
 
 /**
  * Plugin implementation of the 'select2_autocomplete_widget' widget.
@@ -82,8 +81,10 @@ class Select2AutocompleteWidget extends OptionsSelectWidget {
     if ($this->getSelectionHandlerSetting('auto_create') && ($bundle = $this->getAutocreateBundle())) {
       $element['#autocreate'] = array(
         'bundle' => $bundle,
-        'uid' => ($entity instanceof EntityOwnerInterface) ? $entity->getOwnerId() : \Drupal::currentUser()->id()
+        'uid' => ($entity instanceof EntityOwnerInterface) ? $entity->getOwnerId() : \Drupal::currentUser()->id(),
       );
+      $element['#attributes']['autocreate'] = 'autocreate';
+
     }
 
     $class = 'select2-' . hash('md5', Html::getUniqueId('select2-' . $field_name));
@@ -92,16 +93,16 @@ class Select2AutocompleteWidget extends OptionsSelectWidget {
       'selector' => '.' . $class,
       'field_name' => $field_name,
       'settings' => $this->getSettings(),
-      'items' => []
+      'items' => [],
     ];
 
     foreach ($selected_options as $entity_id => $label) {
       $entity = \Drupal::entityTypeManager()->getStorage($target_type)->load($entity_id);
-      if(isset($entity)){
+      if (isset($entity)){
         $select2_settings['items'][$entity_id] = [
           'id' => $entity_id,
           'label' => $label,
-          'status' => $entity->get('status')->value,
+          'status' => $entity instanceof EntityPublishedInterface ? $entity->isPublished() : TRUE,
         ];
       }
     }
@@ -113,34 +114,41 @@ class Select2AutocompleteWidget extends OptionsSelectWidget {
     return $element;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public static function validateElement(array $element, FormStateInterface $form_state) {
     $target_type = $element['#target_type'];
 
-    $element_value = array_reduce($element['#value'], function ($return, $item) use ($target_type) {
-      if (is_numeric($item)) {
-        $entity = \Drupal::entityTypeManager()->getStorage($target_type)->load($item);
-        if(isset($entity)){
-          $item = 'dummy term name (' . $item . ')';
+    if (is_array($element['#value'])) {
+      $element_value = array_reduce($element['#value'], function ($return, $item) use ($target_type) {
+        if (is_numeric($item)) {
+          $entity = \Drupal::entityTypeManager()->getStorage($target_type)->load($item);
+          if (isset($entity)) {
+            $item = 'dummy term name (' . $item . ')';
+          }
         }
+        if (strpos($item, 'create:') === 0) {
+          $item = str_replace('create:', '', $item);
+        }
+
+        $return[] = $item;
+
+        return $return;
+      });
+      if (is_array($element_value)) {
+        $element['#value'] = Tags::implode($element_value);
       }
 
-      if(strpos($item, 'create:') === 0) {
-        $item = str_replace('create:', '', $item);
-      }
-
-      $return[] = $item;
-
-      return $return;
-    });
-
-    if(is_array($element_value)){
-      $element['#value'] = Tags::implode($element_value);
       $complete_form = &$form_state->getCompleteForm();
       EntityAutocomplete::validateEntityAutocomplete($element, $form_state, $complete_form);
     }
 
   }
 
+  /**
+   * {@inheritdoc}
+   */
   protected function getOptions(FieldableEntityInterface $entity) {
     if (!isset($this->options)) {
       $this->options = [];
@@ -148,6 +156,9 @@ class Select2AutocompleteWidget extends OptionsSelectWidget {
     return $this->options;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   protected function getSelectedOptions(FieldItemListInterface $items) {
     $selected_options = array();
     $referenced_entities = $items->referencedEntities();

@@ -3,14 +3,16 @@
 namespace Drupal\select2_widget\Service;
 
 use Drupal\Core\Entity\EntityAutocompleteMatcher;
-use Drupal\Core\Entity\EntityReferenceSelection\SelectionPluginManagerInterface;
+use Drupal\Core\Entity\EntityPublishedInterface;
 
+/**
+ * Class Selec2EntityAutocompleteMatcher.
+ */
 class Selec2EntityAutocompleteMatcher extends EntityAutocompleteMatcher {
 
-  public function __construct(SelectionPluginManagerInterface $selection_manager) {
-    parent::__construct($selection_manager);
-  }
-
+  /**
+   * {@inheritdoc}
+   */
   public function getMatches($target_type, $selection_handler, $selection_settings, $string = '') {
     $matches = [];
 
@@ -30,18 +32,17 @@ class Selec2EntityAutocompleteMatcher extends EntityAutocompleteMatcher {
       foreach ($entity_labels as $values) {
         foreach ($values as $entity_id => $label) {
           $entity = \Drupal::entityTypeManager()->getStorage($target_type)->load($entity_id);
-
           $matches[] = [
             'id' => $entity_id,
             'text' => $label,
             'label' => $entity->label(),
-            'status' => $entity->get('status')->value
+            'status' => $entity instanceof EntityPublishedInterface ? $entity->isPublished() : TRUE,
           ];
-
         }
       }
     }
 
     return $matches;
   }
+
 }

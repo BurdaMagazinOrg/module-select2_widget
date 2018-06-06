@@ -6,7 +6,6 @@ use Drupal\Core\Entity\Element\EntityAutocomplete;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element\Select;
 use Drupal\Core\Render\Element\Textfield;
-use function is_array;
 
 /**
  * Provides an select2 entity autocomplete form element.
@@ -20,11 +19,14 @@ class Select2EntityAutocomplete extends Select {
 
   protected $entityAutocomplete;
 
+  /**
+   * {@inheritdoc}
+   */
   public function getInfo() {
     $info = parent::getInfo();
     $class = get_class($this);
 
-  // Apply default form element properties.
+    // Apply default form element properties.
     $info['#target_type'] = NULL;
     $info['#selection_handler'] = 'default';
     $info['#selection_settings'] = array();
@@ -46,23 +48,34 @@ class Select2EntityAutocomplete extends Select {
     return $info;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public static function valueCallback(&$element, $input, FormStateInterface $form_state) {
     $result = parent::valueCallback($element, $input, $form_state);
     $target_type = $element['#target_type'];
-    $selected_options = $element['#options'];
 
-    if(is_array($result)){
-      foreach ($result as $entity_id => $label) {
-        if(!isset($selected_options[$entity_id])){
-          if(is_numeric($entity_id)){
-            $entity = \Drupal::entityTypeManager()->getStorage($target_type)->load($entity_id);
-            $selected_options[$entity_id] = $entity->label();
-          }
-          else {
-            $selected_options[$entity_id] = $entity_id;
+    if ($result) {
+      $selected_options = [];
+      if (is_array($result)) {
+        foreach ($result as $entity_id => $label) {
+          if (!isset($selected_options[$entity_id])) {
+            if (is_numeric($entity_id)) {
+              $entity = \Drupal::entityTypeManager()->getStorage($target_type)->load($entity_id);
+              $selected_options[$entity_id] = $entity->label();
+            }
+            else {
+              $selected_options[$entity_id] = $entity_id;
+            }
           }
         }
       }
+      elseif (is_numeric($result)) {
+        $entity = \Drupal::entityTypeManager()->getStorage($target_type)->load($result);
+        $selected_options[$result] = $entity->label();
+      }
+
+      $form_state->setValueForElement($element, array_keys($selected_options));
       $element['#options'] = $selected_options;
     }
 
